@@ -19,17 +19,6 @@ class RE_Dataset(torch.utils.data.Dataset):
         return len(self.labels)
 
 def preprocessing_dataset(dataset):
-    # """ 처음 불러온 csv 파일을 원하는 형태의 DataFrame으로 변경 시켜줍니다."""
-    # subject_entity = []
-    # object_entity = []
-    # for i,j in zip(dataset['subject_entity'], dataset['object_entity']):
-    #     i = i[1:-1].split(',')[0].split(':')[1]
-    #     j = j[1:-1].split(',')[0].split(':')[1]
-    #
-    #     subject_entity.append(i)
-    #     object_entity.append(j)
-    #
-    # out_dataset = pd.DataFrame({'id':dataset['id'], 'sentence':dataset['sentence'],'subject_entity':subject_entity,'object_entity':object_entity,'label':dataset['label'],})
     out_dataset = dataset
     return out_dataset
 
@@ -53,84 +42,73 @@ def label_to_num(label):
   
     return num_label
 
-def tokenized_dataset_inference(dataset, tokenizer):
-    """ tokenizer에 따라 sentence를 tokenizing 합니다."""
-    concat_entity = []
-    for e01, e02 in zip(dataset['subject_entity'], dataset['object_entity']):
-        temp = ''
-        temp = e01 + '[SEP]' + e02
-        concat_entity.append(temp)
-        
-    tokenized_sentences = tokenizer(
-        concat_entity,
-        list(dataset['sentence']),
-        return_tensors="pt",
-        padding=True,
-        truncation=True,
-        max_length=256,
-        add_special_tokens=True,
-    )
-    
-    return tokenized_sentences
 
-def tokenized_dataset(dataset_dir, tokenizer):
+def tokenized_dataset(dataset_dir, tokenizer, tokenizing_type="type_entity_marker_punct", added_special_tokens=None):
     """ 위치에 따라 파일을 가져와 dataset을 구성합니다."""
     dataset = load_data(dataset_dir)
     
     """ dataset에서 가져온 value값으로 label을 가져옵니다. """
     num_label = label_to_num(dataset['label'].values)
 
-    # # BaseLine code
-    # """ dataset에서 가져온 entity들을 tokenizing 합니다."""
-    # concat_entity = []
-    # for e01, e02 in zip(dataset['subject_entity'], dataset['object_entity']):
-    #     temp = ''
-    #     temp = e01 + '[SEP]' + e02
-    #     concat_entity.append(temp)
-    # --------------------------------------------
-    # # 1. Add Special Tokens to Each Entity Side - Entity Marker
-    # prepro_data = []
-    # for i in range(len(dataset)):
-    #   bse_idx = dict(eval(dataset['subject_entity'][i]))['start_idx']
-    #   ese_idx = dict(eval(dataset['subject_entity'][i]))['end_idx']
-    #   boe_idx = dict(eval(dataset['object_entity'][i]))['start_idx']
-    #   eoe_idx = dict(eval(dataset['object_entity'][i]))['end_idx']
-    #   if bse_idx < boe_idx:
-    #     prepro_data.append(
-    #       dataset['sentence'][i][:bse_idx] + added_special_tokens[0] + dataset['sentence'][i][bse_idx:ese_idx + 1] +
-    #       added_special_tokens[1] + dataset['sentence'][i][ese_idx + 1:boe_idx] + added_special_tokens[2] +
-    #       dataset['sentence'][i][boe_idx:eoe_idx + 1] + added_special_tokens[3] + dataset['sentence'][i][eoe_idx + 1:])
-    #   else:
-    #     prepro_data.append(
-    #       dataset['sentence'][i][:boe_idx] + added_special_tokens[2] + dataset['sentence'][i][boe_idx:eoe_idx + 1] +
-    #       added_special_tokens[3] + dataset['sentence'][i][eoe_idx + 1:bse_idx] + added_special_tokens[0] +
-    #       dataset['sentence'][i][bse_idx:ese_idx + 1] + added_special_tokens[1] + dataset['sentence'][i][ese_idx + 1:])
-    # --------------------------------------------
-    # 2. Typed Entity Marker
-    prepro_data = []
-    for i in range(len(dataset)):
-        subj, obj = dict(eval(dataset['subject_entity'][i]))['type'], dict(eval(dataset['object_entity'][i]))['type']
-        subj = subj.replace("_", " ").lower()
-        obj = obj.replace("_", " ").lower()
-        subj_token = f"@*{subj}*"
-        obj_token = f"#^{obj}^"
+    prepro_data = [] # Tokenizing 된 dataset을 담을 list
+    if tokenizing_type == "base":
+        # BaseLine code
+        """ dataset에서 가져온 entity들을 tokenizing 합니다."""
+        for e01, e02 in zip(dataset['subject_entity'], dataset['object_entity']):
+          temp = ''
+          temp = dict(eval(e01))['word'] + '[SEP]' + dict(eval(e02))['word']
+          prepro_data.append(temp)
+    elif tokenizing_type == "entity_marker" and added_special_tokens is not None:
+        # 1. Add Special Tokens to Each Entity Side - Entity Marker
+        for i in range(len(dataset)):
+            bse_idx = dict(eval(dataset['subject_entity'][i]))['start_idx']
+            ese_idx = dict(eval(dataset['subject_entity'][i]))['end_idx']
+            boe_idx = dict(eval(dataset['object_entity'][i]))['start_idx']
+            eoe_idx = dict(eval(dataset['object_entity'][i]))['end_idx']
+            if bse_idx < boe_idx:
+                prepro_data.append(
+                    dataset['sentence'][i][:bse_idx] +
+                    added_special_tokens[0] + dataset['sentence'][i][bse_idx:ese_idx + 1] + added_special_tokens[1] +
+                    dataset['sentence'][i][ese_idx + 1:boe_idx] +
+                    added_special_tokens[2] + dataset['sentence'][i][boe_idx:eoe_idx + 1] + added_special_tokens[3] +
+                    dataset['sentence'][i][eoe_idx + 1:]
+                )
 
-        bse_idx = dict(eval(dataset['subject_entity'][i]))['start_idx']
-        ese_idx = dict(eval(dataset['subject_entity'][i]))['end_idx']
-        boe_idx = dict(eval(dataset['object_entity'][i]))['start_idx']
-        eoe_idx = dict(eval(dataset['object_entity'][i]))['end_idx']
-        if bse_idx < boe_idx:
-            prepro_data.append(dataset['sentence'][i][:bse_idx] +
-                               subj_token + dataset['sentence'][i][bse_idx:ese_idx + 1] + "@" +
-                               dataset['sentence'][i][ese_idx + 1:boe_idx] +
-                               obj_token + dataset['sentence'][i][boe_idx:eoe_idx + 1] + "#" +
-                               dataset['sentence'][i][eoe_idx + 1:])
-        else:
-            prepro_data.append(dataset['sentence'][i][:boe_idx] +
-                               obj_token + dataset['sentence'][i][boe_idx:eoe_idx + 1] + "#" +
-                               dataset['sentence'][i][eoe_idx + 1:bse_idx] +
-                               subj_token + dataset['sentence'][i][bse_idx:ese_idx + 1] + "@" +
-                               dataset['sentence'][i][ese_idx + 1:])
+            else:
+                prepro_data.append(
+                    dataset['sentence'][i][:boe_idx] +
+                    added_special_tokens[2] + dataset['sentence'][i][boe_idx:eoe_idx + 1] + added_special_tokens[3] +
+                    dataset['sentence'][i][eoe_idx + 1:bse_idx] +
+                    added_special_tokens[0] + dataset['sentence'][i][bse_idx:ese_idx + 1] + added_special_tokens[1] +
+                    dataset['sentence'][i][ese_idx + 1:]
+                )
+    elif tokenizing_type == "type_entity_marker_punct":
+        # 2. Typed Entity Marker
+        for i in range(len(dataset)):
+            subj, obj = dict(eval(dataset['subject_entity'][i]))['type'], dict(eval(dataset['object_entity'][i]))['type']
+            subj = subj.replace("_", " ").lower()
+            obj = obj.replace("_", " ").lower()
+            subj_token = f"@*{subj}*"
+            obj_token = f"#^{obj}^"
+
+            bse_idx = dict(eval(dataset['subject_entity'][i]))['start_idx']
+            ese_idx = dict(eval(dataset['subject_entity'][i]))['end_idx']
+            boe_idx = dict(eval(dataset['object_entity'][i]))['start_idx']
+            eoe_idx = dict(eval(dataset['object_entity'][i]))['end_idx']
+            if bse_idx < boe_idx:
+                prepro_data.append(dataset['sentence'][i][:bse_idx] +
+                                   subj_token + dataset['sentence'][i][bse_idx:ese_idx + 1] + "@" +
+                                   dataset['sentence'][i][ese_idx + 1:boe_idx] +
+                                   obj_token + dataset['sentence'][i][boe_idx:eoe_idx + 1] + "#" +
+                                   dataset['sentence'][i][eoe_idx + 1:])
+            else:
+                prepro_data.append(dataset['sentence'][i][:boe_idx] +
+                                   obj_token + dataset['sentence'][i][boe_idx:eoe_idx + 1] + "#" +
+                                   dataset['sentence'][i][eoe_idx + 1:bse_idx] +
+                                   subj_token + dataset['sentence'][i][bse_idx:ese_idx + 1] + "@" +
+                                   dataset['sentence'][i][ese_idx + 1:])
+    else:
+        raise NameError(f"{tokenizing_type} is not defined. Please select one of ['base', 'entity_marker', 'type_entity_marker_punct']")
 
     tokenized_sentences = tokenizer(
         prepro_data,
