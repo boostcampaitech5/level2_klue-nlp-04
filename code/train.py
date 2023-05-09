@@ -4,6 +4,7 @@ import pandas as pd
 import torch
 import numpy as np
 import time
+import random
 from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification, Trainer, TrainingArguments, AdamW
 # import wandb
 
@@ -11,7 +12,18 @@ from load_data import *
 from metrics import *
 from CustomScheduler import CosineAnnealingWarmUpRestarts
 
+def seed_everything(seed: int = 42):
+  random.seed(seed)
+  np.random.seed(seed)
+  os.environ["PYTHONHASHSEED"] = str(seed)
+  torch.manual_seed(seed)
+  torch.cuda.manual_seed(seed)
+  torch.backends.cudnn.deterministic = True
+  torch.backends.cudnn.benchmark = True
+
+
 def train():
+    seed_everything(42)
     # MODEL_NAME = "bert-base-uncased"
     # MODEL_NAME = "klue/bert-base"
     MODEL_NAME = "klue/roberta-small"
