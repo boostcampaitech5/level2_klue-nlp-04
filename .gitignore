@@ -365,3 +365,8 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,python,pycharm,windows
+
+# Project train and result files. 
+dataset
+code/results
+code/prediction
