@@ -4,12 +4,14 @@ import pandas as pd
 import torch
 import numpy as np
 import time
+import random
 from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification, Trainer, TrainingArguments, AdamW
 
 from load_data import *
 from metrics import *
 
 from CustomScheduler import CosineAnnealingWarmUpRestarts
+
 
 def _getTrainerWithConfig(config):
     return TrainingArguments(
@@ -27,10 +29,22 @@ def _getTrainerWithConfig(config):
         evaluation_strategy             = config["train"]["evaluation_strategy"],
         load_best_model_at_end          = config["train"]["load_best_model_at_end"]
     )
+  
+  
+def seed_everything(seed: int = 42):
+    random.seed(seed)
+    np.random.seed(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = True
 
-def train(args, config=None):
-    MODEL_NAME = args.model_name
     
+def train(args, config=None):
+    seed_everything(42)
+    
+    MODEL_NAME = args.model_name
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     
     # load dataset and return tokenizing dataset
