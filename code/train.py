@@ -56,6 +56,9 @@ def train():
     scheduler = CosineAnnealingWarmUpRestarts(optimizers, T_0=1000, T_mult=2, eta_max=3e-5,  T_up=500, gamma=0.5)
 
     training_args = TrainingArguments(
+        fp16=True,                      # use 16-bit (mixed) precision to increase speed
+        gradient_checkpointing=True,    # use gradient checkpointing to reduce memory usage
+        ##
         output_dir='./results',          # output directory
         save_total_limit=5,              # number of total save model.
         save_steps=500,                 # model saving step. ## check-point가 여기야
