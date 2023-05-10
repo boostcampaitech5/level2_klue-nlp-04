@@ -6,28 +6,47 @@ import numpy as np
 import time
 import random
 from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification, Trainer, TrainingArguments, AdamW
-# import wandb
 
 from load_data import *
 from metrics import *
 from torch.utils.data import random_split
 from CustomScheduler import CosineAnnealingWarmUpRestarts
 
+
+def _getTrainerWithConfig(config):
+    return TrainingArguments(
+        output_dir                      = config["train"]["output_dir"],
+        save_total_limit                = int(config["train"]["save_total_limit"]),
+        save_steps                      = int(config["train"]["save_steps"]),
+        num_train_epochs                = int(config["train"]["num_train_epochs"]),
+        learning_rate                   = float(config["train"]["learning_rate"]),
+        per_device_eval_batch_size      = int(config["train"]["per_device_eval_batch_size"]),
+        warmup_steps                    = int(config["train"]["warmup_steps"]),
+        weight_decay                    = float(config["train"]["weight_decay"]),
+        logging_dir                     = config["train"]["logging_dir"],
+        logging_steps                   = int(config["train"]["logging_steps"]),
+        eval_steps                      = int(config["train"]["eval_steps"]),
+        evaluation_strategy             = config["train"]["evaluation_strategy"],
+        load_best_model_at_end          = config["train"]["load_best_model_at_end"]
+    )
+  
+  
 def seed_everything(seed: int = 42):
-  random.seed(seed)
-  np.random.seed(seed)
-  os.environ["PYTHONHASHSEED"] = str(seed)
-  torch.manual_seed(seed)
-  torch.cuda.manual_seed(seed)
-  torch.backends.cudnn.deterministic = True
-  torch.backends.cudnn.benchmark = True
+    random.seed(seed)
+    np.random.seed(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = True
 
-
-def train():
+    
+def train(args, config=None):
     seed_everything(42)
 
     MODEL_NAME = "klue/roberta-small"
-    
+
+    MODEL_NAME = args.model_name
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     # Entitiy Marker 사용
     # added_special_tokens = ['[SE]', '[/SE]', '[OE]', '[/OE]']
@@ -66,6 +85,13 @@ def train():
     scheduler = CosineAnnealingWarmUpRestarts(optimizers, T_0=1000, T_mult=2, eta_max=3e-5,  T_up=500, gamma=0.5)
 
     training_args = TrainingArguments(
+        fp16=True,                      # use 16-bit (mixed) precision to increase speed
+        gradient_checkpointing=True,    # use gradient checkpointing to reduce memory usage
+        # TODO:
+        # adamw 대신 adafactor, 8비트아담
+        # 데이터로더 pin과 nun_worker 설정하기
+        # 배치 크기 늘리기
+        ##
         output_dir='./results',          # output directory
         save_total_limit=5,              # number of total save model.
         save_steps=500,                 # model saving step. ## check-point가 여기야
@@ -82,8 +108,11 @@ def train():
                                      # `steps`: Evaluate every `eval_steps`.
                                      # `epoch`: Evaluate every end of epoch.
         eval_steps = 500,            # evaluation step.
+
         load_best_model_at_end = True 
     )
+
+    training_args = _getTrainerWithConfig(config) if config else None
     
     trainer = Trainer(
         model=model,                         # the instantiated 🤗 Transformers model to be trained
@@ -101,7 +130,7 @@ def train():
     # 모델 저장
     # 모델 저장 경로와 이름 설정
     model_save_path = './best_model'
-    model_name = 'model_{}_{}'.format(MODEL_NAME, int(time.time()))
+    model_name = 'model_{}_{}'.format(MODEL_NAME, int(time.time.now()))
 
     # 경로와 이름을 합쳐서 완전한 경로 생성
     model_path = os.path.join(model_save_path, model_name)
@@ -112,11 +141,3 @@ def train():
 
     # 모델 저장
     model.save_pretrained(model_path)
-    
-def main_train():
-    train()
-
-# if __name__ == '__main__':
-#     main()
-
-
