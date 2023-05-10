@@ -10,6 +10,7 @@ from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassifi
 
 from load_data import *
 from metrics import *
+from torch.utils.data import random_split
 from CustomScheduler import CosineAnnealingWarmUpRestarts
 
 def seed_everything(seed: int = 42):
@@ -31,11 +32,13 @@ def train():
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     
     # load dataset and return tokenizing dataset
-    tokenized_train, train_label = tokenized_dataset("../dataset/train/train.csv", tokenizer)
+    tokenized_total, total_label = tokenized_dataset("../dataset/train/train.csv", tokenizer)
     # tokenized_dev, dev_label = tokenized_dataset("../dataset/train/dev.csv", tokenizer)
 
-    # make dataset for pytorch.
-    RE_train_dataset = RE_Dataset(tokenized_train, train_label)
+    # split dataset for pytorch.
+    train_frac = 0.8
+    RE_total_dataset = RE_Dataset(tokenized_total, total_label)
+    RE_train_dataset, RE_val_dataset = random_split(RE_total_dataset, [int(len(RE_total_dataset)*train_frac), int(len(RE_total_dataset)*(1-train_frac))])
     # RE_dev_dataset = RE_Dataset(tokenized_dev, dev_label)
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -79,7 +82,7 @@ def train():
         model=model,                         # the instantiated 🤗 Transformers model to be trained
         args=training_args,                  # training arguments, defined above
         train_dataset=RE_train_dataset,         # training dataset
-        eval_dataset=RE_train_dataset,             # evaluation dataset ## 수정
+        eval_dataset=RE_val_dataset,             # evaluation dataset ## 수정
         compute_metrics=compute_metrics,        # define metrics function
         
         optimizers=(optimizers, scheduler)
