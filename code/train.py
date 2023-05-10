@@ -58,6 +58,10 @@ def train():
     training_args = TrainingArguments(
         fp16=True,                      # use 16-bit (mixed) precision to increase speed
         gradient_checkpointing=True,    # use gradient checkpointing to reduce memory usage
+        # TODO:
+        # adamw 대신 adafactor, 8비트아담
+        # 데이터로더 pin과 nun_worker 설정하기
+        # 배치 크기 늘리기
         ##
         output_dir='./results',          # output directory
         save_total_limit=5,              # number of total save model.
