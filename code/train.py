@@ -25,21 +25,26 @@ def seed_everything(seed: int = 42):
 
 def train():
     seed_everything(42)
-    # MODEL_NAME = "bert-base-uncased"
-    # MODEL_NAME = "klue/bert-base"
+
     MODEL_NAME = "klue/roberta-small"
     
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-    
-    # load dataset and return tokenizing dataset
-    tokenized_total, total_label = tokenized_dataset("../dataset/train/train.csv", tokenizer)
-    # tokenized_dev, dev_label = tokenized_dataset("../dataset/train/dev.csv", tokenizer)
+    # Entitiy Marker 사용
+    # added_special_tokens = ['[SE]', '[/SE]', '[OE]', '[/OE]']
+    # added_token_num = tokenizer.add_special_tokens({'additional_special_tokens': added_special_tokens})
+
+
+    # Data Load and Tokenizing
+    # 1. Entity Marker 사용
+    # tokenized_total, total_label = tokenized_dataset("../dataset/train/train.csv", tokenizer, tokenizing_type="entity_marker", added_special_tokens)
+    # 2. Base, typed Entity Marker Punct 사용
+    tokenized_total, total_label = tokenized_dataset("../dataset/train/train.csv", tokenizer, tokenizing_type="type_entity_marker_punct")
+
 
     # split dataset for pytorch.
     train_frac = 0.8
     RE_total_dataset = RE_Dataset(tokenized_total, total_label)
     RE_train_dataset, RE_val_dataset = random_split(RE_total_dataset, [int(len(RE_total_dataset)*train_frac), int(len(RE_total_dataset)*(1-train_frac))])
-    # RE_dev_dataset = RE_Dataset(tokenized_dev, dev_label)
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -50,10 +55,12 @@ def train():
     model_config.num_labels = 30
     
     model =  AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, config=model_config)
+    # Entity Marker 사용
+    # model.resize_token_embeddings(tokenizer.vocab_size + added_token_num) # 추가한 Special token 갯수만큼 Embedding을 늘려줘야함
     print(model.config)
     model.parameters
     model.to(device)
-    
+
     # optimizer and scheduler
     optimizers = AdamW(model.parameters(), lr=0)
     scheduler = CosineAnnealingWarmUpRestarts(optimizers, T_0=1000, T_mult=2, eta_max=3e-5,  T_up=500, gamma=0.5)
