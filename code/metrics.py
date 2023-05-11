@@ -24,7 +24,7 @@ def klue_re_micro_f1(preds, labels):
 def klue_re_seperate_f1(preds, labels):
     """KLUE-RE seperate f1 (including no_relation)
     
-    출력물은 precision, recall, f1-score, support(=개수)로 4개입니다.
+    출력물은 #precision, #recall, f1-score, support(=개수)로 2개입니다.
     """
     label_list = ['no_relation', 'org:top_members/employees', 'org:members',
        'org:product', 'per:title', 'org:alternate_names',
@@ -46,6 +46,8 @@ def klue_re_seperate_f1(preds, labels):
     ans = [ (metric_label[i], list(metric[i])) for i in range(len(metric_label)) ]
     ans[2] = (ans[2][0], [ (label_list[i], v) for i, v in enumerate(ans[2][1]) ] )
     ans[3] = (ans[3][0], [ (label_list[i], v) for i, v in enumerate(ans[3][1]) ] )
+    ans.pop(0)
+    ans.pop(0)
     return ans
 
 
