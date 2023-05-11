@@ -63,7 +63,7 @@ def train(args, config=None):
     # split dataset for pytorch.
     train_frac = 0.8
     RE_total_dataset = RE_Dataset(tokenized_total, total_label)
-    RE_train_dataset, RE_val_dataset = random_split(RE_total_dataset, [int(len(RE_total_dataset)*train_frac), int(len(RE_total_dataset)*(1-train_frac))])
+    RE_train_dataset, RE_val_dataset = random_split(RE_total_dataset, [int(len(RE_total_dataset)*train_frac), len(RE_total_dataset)-int(len(RE_total_dataset)*train_frac)])
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
