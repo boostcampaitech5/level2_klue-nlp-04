@@ -49,6 +49,30 @@ def klue_re_seperate_f1(preds, labels):
     return ans
 
 
+def draw_cofusion_matrix(preds, labels):
+    label_list = ['no_relation', 'org:top_members/employees', 'org:members',
+        'org:product', 'per:title', 'org:alternate_names',
+        'per:employee_of', 'org:place_of_headquarters', 'per:product',
+        'org:number_of_employees/members', 'per:children',
+        'per:place_of_residence', 'per:alternate_names',
+        'per:other_family', 'per:colleagues', 'per:origin', 'per:siblings',
+        'per:spouse', 'org:founded', 'org:political/religious_affiliation',
+        'org:member_of', 'per:parents', 'org:dissolved',
+        'per:schools_attended', 'per:date_of_death', 'per:date_of_birth',
+        'per:place_of_birth', 'per:place_of_death', 'org:founded_by',
+        'per:religion']
+    mat = sklearn.metrics.confusion_matrix(
+        y_true=labels, y_pred=preds, normalize='true')
+    mat = np.array([list(int('{:2.0f}'.format((x*99))) for x in xx) for xx in mat])
+    #0.02로 적힌 숫자를 100을 곱해서 2로 만들어주고 내림해줍니다.
+    np.set_printoptions(linewidth=150) 
+    for i in range(len(mat)):
+        print(mat[i], end=' ')
+        print(label_list[i])
+    np.set_printoptions(linewidth=75)
+    return
+
+
 def klue_re_auprc(probs, labels):
     """KLUE-RE AUPRC (with no_relation)"""
     labels = np.eye(30)[labels]
@@ -72,6 +96,7 @@ def compute_metrics(pred):
   auprc = klue_re_auprc(probs, labels)
   acc = accuracy_score(labels, preds) # 리더보드 평가에는 포함되지 않습니다.
   seperate_f1 = klue_re_seperate_f1(preds, labels)
+  draw_cofusion_matrix(preds, labels)
 
   return {
       'micro f1 score': f1,
