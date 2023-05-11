@@ -133,7 +133,7 @@ def train(args, config=None):
     import datetime
     KST = datetime.timezone(datetime.timedelta(hours=9))
     now = datetime.datetime.now(KST)
-    now = now.strftime("%m월%d일%H시%M분%S초")
+    now = now.strftime("%mM%dD%HH%MM")
     model_name = 'model_{}_{}'.format(MODEL_NAME, now)
 
     # 경로와 이름을 합쳐서 완전한 경로 생성
