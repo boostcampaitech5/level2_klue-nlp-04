@@ -130,7 +130,11 @@ def train(args, config=None):
     # 모델 저장
     # 모델 저장 경로와 이름 설정
     model_save_path = './best_model'
-    model_name = 'model_{}_{}'.format(MODEL_NAME, int(time.time.now()))
+    import datetime
+    KST = datetime.timezone(datetime.timedelta(hours=9))
+    now = datetime.datetime.now(KST)
+    now = now.strftime("%mM%dD%HH%MM")
+    model_name = 'model_{}_{}'.format(MODEL_NAME, now)
 
     # 경로와 이름을 합쳐서 완전한 경로 생성
     model_path = os.path.join(model_save_path, model_name)
