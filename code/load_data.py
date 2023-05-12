@@ -2,6 +2,7 @@ import pickle as pickle
 import os
 import pandas as pd
 import torch
+from preprocessing import *
 
 class RE_Dataset(torch.utils.data.Dataset):
     """ Dataset 구성을 위한 class."""
@@ -19,7 +20,7 @@ class RE_Dataset(torch.utils.data.Dataset):
         return len(self.labels)
 
 def preprocessing_dataset(dataset):
-    out_dataset = dataset
+    out_dataset = preprocess(dataset)
     return out_dataset
 
 def load_data(dataset_dir):
