@@ -370,3 +370,6 @@ $RECYCLE.BIN/
 dataset
 code/results
 code/prediction
+
+# wandb
+wandb

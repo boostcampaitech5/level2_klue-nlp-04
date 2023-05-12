@@ -149,4 +149,4 @@ def train(args, config=None):
 
 
 def trainWithSweep(config):
-    pass
+    print(config)
