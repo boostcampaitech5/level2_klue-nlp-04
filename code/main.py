@@ -29,7 +29,7 @@ if __name__ == '__main__':
     if args.config_path != "" :
         config = configparser.ConfigParser()
         config.read(args.config_path)
-        args.model_name = config['train']['model_name']
+        args.model_name = config['model']['model_name']
 
         args.model_path     = config['inference']['saved_model_path']
         args.tokenizer_name = config['inference']['tokenizer_name']

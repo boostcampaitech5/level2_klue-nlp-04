@@ -5,6 +5,7 @@ import torch
 import numpy as np
 import time
 import random
+import json
 from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification, Trainer, TrainingArguments, AdamW
 
 from load_data import *
@@ -31,8 +32,20 @@ def _getTrainerWithConfig(config):
         evaluation_strategy             = config["train"]["evaluation_strategy"],
         load_best_model_at_end          = config["train"]["load_best_model_at_end"]
     )
-  
-  
+
+def _getScheduler(optimizers, config):
+    if config["model.scheduler"]["scheduler"] == "CosineAnnealingWarmUpRestarts":
+        return CosineAnnealingWarmUpRestarts(
+            optimizer         = optimizers,
+            T_0               = int(config["model.scheduler"]["T_0"]),
+            T_mult            = int(config["model.scheduler"]["T_mult"]),
+            eta_max           = float(config["model.scheduler"]["eta_max"]),
+            T_up              = int(config["model.scheduler"]["T_up"]),
+            gamma             = float(config["model.scheduler"]["gamma"])
+        )
+    else:
+        raise NameError(f"{config['model.scheduler']['scheduler']} is not defined. ")
+
 def seed_everything(seed: int = 42):
     random.seed(seed)
     np.random.seed(seed)
@@ -52,14 +65,16 @@ def train(args, config=None):
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     # Entitiy Marker 사용
     # added_special_tokens = ['[SE]', '[/SE]', '[OE]', '[/OE]']
+    # added_special_tokens = json.loads(config["dataset"]["tokenizing_type"]) if config else added_special_tokens
     # added_token_num = tokenizer.add_special_tokens({'additional_special_tokens': added_special_tokens})
 
 
     # Data Load and Tokenizing
+    tokenizing_type         = config["dataset"]["tokenizing_type"] if config else "type_entity_marker_punct"
     # 1. Entity Marker 사용
     # tokenized_total, total_label = tokenized_dataset("../dataset/train/train.csv", tokenizer, tokenizing_type="entity_marker", added_special_tokens)
     # 2. Base, typed Entity Marker Punct 사용
-    tokenized_total, total_label = tokenized_dataset("../dataset/train/train.csv", tokenizer, tokenizing_type="type_entity_marker_punct")
+    tokenized_total, total_label = tokenized_dataset("../dataset/train/train.csv", tokenizer, tokenizing_type=tokenizing_type)
 
 
     # split dataset for pytorch.
@@ -114,6 +129,7 @@ def train(args, config=None):
         load_best_model_at_end = True 
     )
 
+    scheduler     = _getScheduler(optimizers, config) if config else scheduler
     training_args = _getTrainerWithConfig(config) if config else training_args
     
     trainer = Trainer(
