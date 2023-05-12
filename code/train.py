@@ -114,7 +114,7 @@ def train(args, config=None):
         load_best_model_at_end = True 
     )
 
-    training_args = _getTrainerWithConfig(config) if config else None
+    training_args = _getTrainerWithConfig(config) if config else training_args
     
     trainer = Trainer(
         model=model,                         # the instantiated 🤗 Transformers model to be trained
