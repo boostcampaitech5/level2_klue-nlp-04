@@ -15,6 +15,8 @@ from CustomScheduler import CosineAnnealingWarmUpRestarts
 
 def _getTrainerWithConfig(config):
     return TrainingArguments(
+        fp16                            = config["train"]["fp16"],
+        gradient_checkpointing          = config["train"]["gradient_checkpointing"],
         output_dir                      = config["train"]["output_dir"],
         save_total_limit                = int(config["train"]["save_total_limit"]),
         save_steps                      = int(config["train"]["save_steps"]),
