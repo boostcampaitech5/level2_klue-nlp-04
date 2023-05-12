@@ -16,8 +16,8 @@ from CustomScheduler import CosineAnnealingWarmUpRestarts
 
 def _getTrainerWithConfig(config):
     return TrainingArguments(
-        fp16                            = config["train"]["fp16"],
-        gradient_checkpointing          = config["train"]["gradient_checkpointing"],
+        fp16                            = config["train"].getboolean("fp16"),
+        gradient_checkpointing          = config["train"].getboolean("gradient_checkpointing"),
         output_dir                      = config["train"]["output_dir"],
         save_total_limit                = int(config["train"]["save_total_limit"]),
         save_steps                      = int(config["train"]["save_steps"]),
@@ -30,7 +30,7 @@ def _getTrainerWithConfig(config):
         logging_steps                   = int(config["train"]["logging_steps"]),
         eval_steps                      = int(config["train"]["eval_steps"]),
         evaluation_strategy             = config["train"]["evaluation_strategy"],
-        load_best_model_at_end          = config["train"]["load_best_model_at_end"]
+        load_best_model_at_end          = config["train"].getboolean("load_best_model_at_end"),
     )
 
 def _getScheduler(optimizers, config):
