@@ -27,7 +27,8 @@ def _getTrainerWithConfig(config):
         logging_steps                   = int(config["train"]["logging_steps"]),
         eval_steps                      = int(config["train"]["eval_steps"]),
         evaluation_strategy             = config["train"]["evaluation_strategy"],
-        load_best_model_at_end          = config["train"]["load_best_model_at_end"]
+        load_best_model_at_end          = config["train"]["load_best_model_at_end"],
+        report_to='wandb',
     )
   
   
@@ -145,3 +146,7 @@ def train(args, config=None):
 
     # 모델 저장
     model.save_pretrained(model_path)
+
+
+def trainWithSweep(config):
+    pass
