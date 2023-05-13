@@ -6,13 +6,27 @@ import configparser
 import json
 import wandb
 
+def _decode(o):
+    # Note the "unicode" part is only for python2
+    if isinstance(o, str):
+        try:
+            return float(o)
+        except ValueError:
+            return o
+    elif isinstance(o, dict):
+        return {k: _decode(v) for k, v in o.items()}
+    elif isinstance(o, list):
+        return [_decode(v) for v in o]
+    else:
+        return o
+
 def main(args, config=None):
     if args.mode == "train" :
 
         if config["sweep"].getboolean("run_sweep") :
             print("Training with sweep mode")
 
-            sweep_id = wandb.sweep(json.load(open(config["sweep"]["sweep_path"], "r")), project="RE", entity="nlp-10")
+            sweep_id = wandb.sweep(json.load(open(config["sweep"]["sweep_path"], "r"), object_hook=_decode), project="RE", entity="nlp-10")
             wandb.agent(sweep_id, trainWithSweep, count=int(config["sweep"]["sweep_count"]))
             wandb.finish()
         else:

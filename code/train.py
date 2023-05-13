@@ -13,11 +13,12 @@ from metrics import *
 from torch.utils.data import random_split
 from CustomScheduler import CosineAnnealingWarmUpRestarts
 
+import wandb
 
 def _getTrainerWithConfig(config):
     return TrainingArguments(
-        fp16                            = config["train"].getboolean("fp16"),
-        gradient_checkpointing          = config["train"].getboolean("gradient_checkpointing"),
+        fp16                            = _strBool2Boolean(config["train"]["fp16"]),
+        gradient_checkpointing          = _strBool2Boolean(config["train"]["gradient_checkpointing"]),
         output_dir                      = config["train"]["output_dir"],
         save_total_limit                = int(config["train"]["save_total_limit"]),
         save_steps                      = int(config["train"]["save_steps"]),
@@ -30,8 +31,8 @@ def _getTrainerWithConfig(config):
         logging_steps                   = int(config["train"]["logging_steps"]),
         eval_steps                      = int(config["train"]["eval_steps"]),
         evaluation_strategy             = config["train"]["evaluation_strategy"],
-        load_best_model_at_end          = config["train"].getboolean("load_best_model_at_end"),,
-        report_to='wandb',
+        load_best_model_at_end          = _strBool2Boolean(config["train"]["load_best_model_at_end"]),
+        report_to                       = 'wandb' if _strBool2Boolean(config["sweep"]["run_sweep"]) else None,
     )
 
 def _getScheduler(optimizers, config):
@@ -46,6 +47,18 @@ def _getScheduler(optimizers, config):
         )
     else:
         raise NameError(f"{config['model.scheduler']['scheduler']} is not defined. ")
+
+def _strBool2Boolean(bool: str) -> bool:
+    return True if bool == "True" else False
+
+def _convertConfig(config: wandb.config) -> dict:
+    dict_config = {"model": {}, "model.scheduler": {}, "dataset": {}, 
+                   "train": {}}
+
+    for key in wandb.config.keys():
+        dict_config[key.split("-")[0]][key.split("-")[1]] = wandb.config[key]
+
+    return dict_config
 
 def seed_everything(seed: int = 42):
     random.seed(seed)
@@ -62,7 +75,7 @@ def train(args, config=None):
 
     MODEL_NAME = "klue/roberta-small"
 
-    MODEL_NAME = args.model_name
+    MODEL_NAME = config["model"]["model_name"] if type(args) == dict else args.model_name
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     # Entitiy Marker 사용
     # added_special_tokens = ['[SE]', '[/SE]', '[OE]', '[/OE]']
@@ -101,7 +114,6 @@ def train(args, config=None):
     # optimizer and scheduler
     optimizers = AdamW(model.parameters(), lr=0)
     scheduler = CosineAnnealingWarmUpRestarts(optimizers, T_0=1000, T_mult=2, eta_max=3e-5,  T_up=500, gamma=0.5)
-
     training_args = TrainingArguments(
         fp16=True,                      # use 16-bit (mixed) precision to increase speed
         gradient_checkpointing=True,    # use gradient checkpointing to reduce memory usage
@@ -130,6 +142,7 @@ def train(args, config=None):
         load_best_model_at_end = True 
     )
 
+    # get config from config parser. 
     scheduler     = _getScheduler(optimizers, config) if config else scheduler
     training_args = _getTrainerWithConfig(config) if config else training_args
     
@@ -166,5 +179,7 @@ def train(args, config=None):
     model.save_pretrained(model_path)
 
 
-def trainWithSweep(config):
-    print(config)
+def trainWithSweep():
+    wandb.init()
+    config = _convertConfig(wandb.config)
+    train({}, config)

@@ -368,8 +368,9 @@ $RECYCLE.BIN/
 
 # Project train and result files. 
 dataset
-code/results
-code/prediction
+code/results/*
+code/prediction/*
+code/best_model
 
 # wandb
 wandb
