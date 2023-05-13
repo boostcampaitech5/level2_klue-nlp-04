@@ -35,6 +35,7 @@ def _getTrainerWithConfig(config):
         report_to                       = 'wandb' if _strBool2Boolean(config["sweep"]["run_sweep"]) else None,
     )
 
+  
 def _getScheduler(optimizers, config):
     if config["model.scheduler"]["scheduler"] == "CosineAnnealingWarmUpRestarts":
         return CosineAnnealingWarmUpRestarts(
@@ -48,9 +49,11 @@ def _getScheduler(optimizers, config):
     else:
         raise NameError(f"{config['model.scheduler']['scheduler']} is not defined. ")
 
+        
 def _strBool2Boolean(bool: str) -> bool:
     return True if bool == "True" else False
 
+  
 def _convertConfig(config: wandb.config) -> dict:
     dict_config = {"model": {}, "model.scheduler": {}, "dataset": {}, 
                    "train": {}}
@@ -59,7 +62,8 @@ def _convertConfig(config: wandb.config) -> dict:
         dict_config[key.split("-")[0]][key.split("-")[1]] = wandb.config[key]
 
     return dict_config
-
+  
+  
 def seed_everything(seed: int = 42):
     random.seed(seed)
     np.random.seed(seed)
@@ -142,7 +146,6 @@ def train(args, config=None):
         load_best_model_at_end = True 
     )
 
-    # get config from config parser. 
     scheduler     = _getScheduler(optimizers, config) if config else scheduler
     training_args = _getTrainerWithConfig(config) if config else training_args
     
