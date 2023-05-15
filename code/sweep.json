@@ -1,0 +1,146 @@
+{
+    "method": "random",
+    "parameters": {
+        "model-model_name": {
+            "values": [
+                "klue/bert-base"
+            ]
+        },
+        "train-output_dir": {
+            "values": [
+                "./results"
+            ]
+        },
+        "train-save_total_limit": {
+            "values": [
+                5
+            ]
+        },
+        "train-warmup_steps": {
+            "values": [
+                100
+            ]
+        },
+        "train-num_train_epochs": {
+            "value": 1
+        },
+        "train-per_device_train_batch_size": {
+            "values": [
+                8,
+                16,
+                32,
+                64
+            ]
+        },
+        "train-learning_rate": {
+            "distribution": "log_uniform_values",
+            "min": 1e-5,
+            "max": 1e-3
+        },
+        "train-weight_decay": {
+            "values": [
+                0.0,
+                0.1,
+                0.2,
+                0.3,
+                0.4,
+                0.5
+            ]
+        },
+        "train-save_steps": {
+            "values": [
+                500
+            ]
+        },
+        "train-per_device_eval_batch_size": {
+            "values": [
+                16
+            ]
+        },
+        "train-logging_dir": {
+            "values": [
+                "./logs"
+            ]
+        },
+        "train-logging_steps": {
+            "values": [
+                100
+            ]
+        },
+        "train-evaluation_strategy": {
+            "values": [
+                "steps"
+            ]
+        },
+        "train-eval_steps": {
+            "values": [
+                500
+            ]
+        },
+        "train-load_best_model_at_end": {
+            "values": [
+                "True"
+            ]
+        },
+        "train-fp16": {
+            "values": [
+                "True"
+            ]
+        },
+        "train-gradient_checkpointing": {
+            "values": [
+                "True"
+            ]
+        },
+        "dataset-tokenizing_type": {
+            "values": [
+                "type_entity_marker_punct"
+            ]
+        },
+        "dataset-added_special_tokens": {
+            "values": [
+                [
+                    "[SE]",
+                    "[/SE]",
+                    "[OE]",
+                    "[/OE]"
+                ]
+            ]
+        },
+        "model.scheduler-scheduler": {
+            "values": [
+                "CosineAnnealingWarmUpRestarts"
+            ]
+        },
+        "model.scheduler-T_0": {
+            "values": [
+                1000
+            ]
+        },
+        "model.scheduler-T_mult": {
+            "values": [
+                2
+            ]
+        },
+        "model.scheduler-eta_max": {
+            "values": [
+                3e-5
+            ]
+        },
+        "model.scheduler-T_up": {
+            "values": [
+                500
+            ]
+        },
+        "model.scheduler-gamma": {
+            "values": [
+                0.5
+            ]
+        },
+        "sweep_sweep": {
+            "values": [
+                "True"
+            ]
+        }
+    }
+}
