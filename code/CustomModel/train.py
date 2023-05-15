@@ -38,6 +38,7 @@ def train():
   seed_everything(42)
   # load model and tokenizer
   # MODEL_NAME = "bert-base-uncased"
+  # MODEL_NAME = "tunib/electra-ko-base"
   MODEL_NAME = "klue/roberta-large"
   tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
