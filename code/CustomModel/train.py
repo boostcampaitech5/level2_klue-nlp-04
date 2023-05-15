@@ -14,7 +14,7 @@ from load_data import *
 from metrics import *
 from torch.utils.data import random_split
 from CustomScheduler import CosineAnnealingWarmUpRestarts
-from model import Model
+from model import TwoEntityModel, RBertModel
 
 def seed_everything(seed: int = 42):
   random.seed(seed)
@@ -81,7 +81,8 @@ def train():
 #   # model.resize_token_embeddings(tokenizer.vocab_size + added_token_num) # 추가한 Special token 갯수만큼 Embedding을 늘려줘야함
 #   print(model.config)
 #   model.parameters
-  model = Model(model_config, args)
+  model = TwoEntityModel(model_config, args)
+  # model = RBertModel(model_config, args)
   model.to(device)
   optimizers = AdamW(model.parameters(), lr=0)
   scheduler = CosineAnnealingWarmUpRestarts(optimizers, T_0=1000, T_mult=2, eta_max=3e-5,  T_up=200, gamma=0.5)
