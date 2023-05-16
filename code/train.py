@@ -6,12 +6,14 @@ import numpy as np
 import time
 import random
 import json
+from collections import namedtuple
 from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification, Trainer, TrainingArguments, AdamW
 
 from load_data import *
 from metrics import *
 from torch.utils.data import random_split
 from CustomScheduler import CosineAnnealingWarmUpRestarts
+from model import RBertModel
 
 import wandb
 
@@ -24,7 +26,9 @@ def _getTrainerWithConfig(config):
         save_steps                      = int(config["train"]["save_steps"]),
         num_train_epochs                = int(config["train"]["num_train_epochs"]),
         learning_rate                   = float(config["train"]["learning_rate"]),
+        per_device_train_batch_size     = int(config["train"]["per_device_train_batch_size"]),
         per_device_eval_batch_size      = int(config["train"]["per_device_eval_batch_size"]),
+        gradient_accumulation_steps     = int(config["train"]["gradient_accumulation_steps"]),
         warmup_steps                    = int(config["train"]["warmup_steps"]),
         weight_decay                    = float(config["train"]["weight_decay"]),
         logging_dir                     = config["train"]["logging_dir"],
@@ -77,8 +81,6 @@ def seed_everything(seed: int = 42):
 def train(args, config=None):
     seed_everything(42)
 
-    MODEL_NAME = "klue/roberta-small"
-
     MODEL_NAME = config["model"]["model_name"] if type(args) == dict else args.model_name
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     # Entitiy Marker 사용
@@ -103,12 +105,17 @@ def train(args, config=None):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     print(device)
-    
+
+    # Entity Tokens to ids for model input
+    entity_args = namedtuple('entity_ids', ['SUBJ_TOKEN', 'OBJ_TOKEN'])
+    entity_ids = entity_args(tokenizer.convert_tokens_to_ids(config["dataset"]["subj_token"]), tokenizer.convert_tokens_to_ids(config["dataset"]["obj_token"]))
+
     # setting model hyperparameter
     model_config =  AutoConfig.from_pretrained(MODEL_NAME)
     model_config.num_labels = 30
     
-    model =  AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, config=model_config)
+    # model =  AutoModelForRSequenceClassification.from_pretrained(MODEL_NAME, config=model_config)
+    model = RBertModel(model_config, entity_ids) # RBert 모델 사용 시에, config에서 사용하는 모델을 Roberta계열로 바꿔주세요!
     # Entity Marker 사용
     # model.resize_token_embeddings(tokenizer.vocab_size + added_token_num) # 추가한 Special token 갯수만큼 Embedding을 늘려줘야함
     print(model.config)
@@ -133,6 +140,7 @@ def train(args, config=None):
         learning_rate=5e-5,               # learning_rate
         per_device_train_batch_size=16,  # batch size per device during training
         per_device_eval_batch_size=16,   # batch size for evaluation
+        gradient_accumulation_steps=1, # Gradient Accumulation
         warmup_steps=500,                # number of warmup steps for learning rate scheduler
         weight_decay=0.01,               # strength of weight decay
         logging_dir='./logs',            # directory for storing logs

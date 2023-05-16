@@ -97,13 +97,15 @@ def tokenized_dataset(dataset_dir, tokenizer, tokenizing_type="type_entity_marke
             boe_idx = dict(eval(dataset['object_entity'][i]))['start_idx']
             eoe_idx = dict(eval(dataset['object_entity'][i]))['end_idx']
             if bse_idx < boe_idx:
-                prepro_data.append(dataset['sentence'][i][:bse_idx] +
+                prepro_data.append(f"subject 는 {dataset['sentence'][i][bse_idx:ese_idx + 1]} 이다. object 는 {dataset['sentence'][i][boe_idx:eoe_idx + 1]} 이다. {dataset['sentence'][i][bse_idx:ese_idx + 1]}의 type은 {subj} 이다. {dataset['sentence'][i][boe_idx:eoe_idx + 1]}의 type은 {obj} 이다. "+
+                                   dataset['sentence'][i][:bse_idx] +
                                    subj_token + dataset['sentence'][i][bse_idx:ese_idx + 1] + "@" +
                                    dataset['sentence'][i][ese_idx + 1:boe_idx] +
                                    obj_token + dataset['sentence'][i][boe_idx:eoe_idx + 1] + "#" +
                                    dataset['sentence'][i][eoe_idx + 1:])
             else:
-                prepro_data.append(dataset['sentence'][i][:boe_idx] +
+                prepro_data.append(f"subject 는 {dataset['sentence'][i][bse_idx:ese_idx + 1]} 이다. object 는 {dataset['sentence'][i][boe_idx:eoe_idx + 1]} 이다. {dataset['sentence'][i][bse_idx:ese_idx + 1]}의 type은 {subj} 이다. {dataset['sentence'][i][boe_idx:eoe_idx + 1]}의 type은 {obj} 이다. " +
+                                   dataset['sentence'][i][:boe_idx] +
                                    obj_token + dataset['sentence'][i][boe_idx:eoe_idx + 1] + "#" +
                                    dataset['sentence'][i][eoe_idx + 1:bse_idx] +
                                    subj_token + dataset['sentence'][i][bse_idx:ese_idx + 1] + "@" +
@@ -113,11 +115,10 @@ def tokenized_dataset(dataset_dir, tokenizer, tokenizing_type="type_entity_marke
 
     tokenized_sentences = tokenizer(
         prepro_data,
-        list(dataset['sentence']),
         return_tensors="pt",
         padding=True,
         truncation=True,
-        max_length=256,
+        max_length=512,
         add_special_tokens=True,
     )
     
