@@ -122,3 +122,44 @@ def tokenized_dataset(dataset_dir, tokenizer, tokenizing_type="type_entity_marke
     )
     
     return [tokenized_sentences,num_label]
+
+def tokenized_dataset_with_entity(dataset_dir, tokenizer):
+    """ 위치에 따라 파일을 가져와 dataset을 구성합니다. """
+    dataset = load_data(dataset_dir)
+    
+    """ dataset에서 가져온 value값으로 label을 가져옵니다. """
+    num_label = label_to_num(dataset['label'].values)
+  
+    """ dataset에서 가져온 entity들을 tokenizing 합니다. """
+    concat_entity = []
+    entities = []
+    for e01, e02 in zip(dataset['subject_entity'], dataset['object_entity']):
+        temp = ''
+        temp = e01 + '[SEP]' + e02
+        entities.append([e01, e02])
+        concat_entity.append(temp)
+        
+    tokenized_sentences = tokenizer(
+        concat_entity,
+        list(dataset['sentence']),
+        return_tensors="pt",
+        padding=True,
+        truncation=True,
+        max_length=256,
+        add_special_tokens=True,
+    )
+ 
+    entity_ids = []
+    for idx, sentence in enumerate(list(dataset['sentence'])) :
+        entity_id = [0 for i in range(241)]
+        tokens = tokenizer.tokenize(sentence)
+        entities[idx] = tokenizer.tokenize(entities[idx])
+
+        for id, token in enumerate(tokens):
+            entity_id[id] = int(token in entities[idx])
+            
+        entity_ids.append(torch.tensor(entity_id))
+    
+    tokenized_sentences['entity_ids'] = entity_ids
+    
+    return [tokenized_sentences,num_label]
