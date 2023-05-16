@@ -23,7 +23,7 @@ def _decode(o):
 def main(args, config=None):
     if args.mode == "train" :
 
-        if config["sweep"].getboolean("run_sweep") :
+        if config and config["sweep"].getboolean("run_sweep") :
             print("Training with sweep mode")
 
             sweep_id = wandb.sweep(json.load(open(config["sweep"]["sweep_path"], "r"), object_hook=_decode), project="RE", entity="nlp-10")

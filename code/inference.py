@@ -56,10 +56,10 @@ def load_test_dataset(dataset_dir, tokenizer):
     test dataset을 불러온 후,
     tokenizing 합니다.
     """
-    test_dataset = load_data(dataset_dir)
+    test_dataset = load_data(dataset_dir, train=False)
     # test_label = list(map(int,test_dataset['label'].values))
     # # tokenizing dataset
-    tokenized_test, test_label = tokenized_dataset(dataset_dir, tokenizer)
+    tokenized_test, test_label = tokenized_dataset(dataset_dir, tokenizer, train=False)
     # tokenized_test = tokenized_dataset_inference(test_dataset, tokenizer)
   
     return test_dataset['id'], tokenized_test, test_label
