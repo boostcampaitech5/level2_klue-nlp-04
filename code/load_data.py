@@ -89,8 +89,12 @@ def tokenized_dataset(dataset_dir, tokenizer, tokenizing_type="type_entity_marke
             subj, obj = dict(eval(dataset['subject_entity'][i]))['type'], dict(eval(dataset['object_entity'][i]))['type']
             subj = subj.replace("_", " ").lower()
             obj = obj.replace("_", " ").lower()
-            subj_token = f"@*{subj}*"
-            obj_token = f"#^{obj}^"
+            dic={'per':'person', 'org':'organization', 'loc':'location',
+                 'dat':'date or time', 'poh':'name', 'noh':'number'}
+            subj = dic[subj]
+            obj = dic[obj]
+            subj_token = f"@ * {subj} * "
+            obj_token = f"# ^ {obj} ^ "
 
             bse_idx = dict(eval(dataset['subject_entity'][i]))['start_idx']
             ese_idx = dict(eval(dataset['subject_entity'][i]))['end_idx']
