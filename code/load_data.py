@@ -23,10 +23,10 @@ def preprocessing_dataset(dataset):
     out_dataset = preprocess(dataset)
     return out_dataset
 
-def load_data(dataset_dir):
+def load_data(dataset_dir, train=True):
     """ csv 파일을 경로에 맡게 불러 옵니다. """
     pd_dataset = pd.read_csv(dataset_dir)
-    dataset = preprocessing_dataset(pd_dataset)
+    dataset = preprocessing_dataset(pd_dataset) if train else pd_dataset
   
     return dataset
 
@@ -44,9 +44,9 @@ def label_to_num(label):
     return num_label
 
 
-def tokenized_dataset(dataset_dir, tokenizer, tokenizing_type="type_entity_marker_punct", added_special_tokens=None):
+def tokenized_dataset(dataset_dir, tokenizer, tokenizing_type="type_entity_marker_punct", added_special_tokens=None, train=True):
     """ 위치에 따라 파일을 가져와 dataset을 구성합니다."""
-    dataset = load_data(dataset_dir)
+    dataset = load_data(dataset_dir, train)
     
     """ dataset에서 가져온 value값으로 label을 가져옵니다. """
     num_label = label_to_num(dataset['label'].values)
@@ -124,9 +124,9 @@ def tokenized_dataset(dataset_dir, tokenizer, tokenizing_type="type_entity_marke
     
     return [tokenized_sentences,num_label]
 
-def tokenized_dataset_with_entity(dataset_dir, tokenizer):
+def tokenized_dataset_with_entity(dataset_dir, tokenizer, train=True):
     """ 위치에 따라 파일을 가져와 dataset을 구성합니다. """
-    dataset = load_data(dataset_dir)
+    dataset = load_data(dataset_dir, train)
     
     """ dataset에서 가져온 value값으로 label을 가져옵니다. """
     num_label = label_to_num(dataset['label'].values)
