@@ -82,6 +82,11 @@
                 "True"
             ]
         },
+        "train-gradient_accumulation_steps": {
+            "values": [
+                1
+            ]
+        },
         "train-fp16": {
             "values": [
                 "True"
@@ -105,6 +110,16 @@
                     "[OE]",
                     "[/OE]"
                 ]
+            ]
+        },
+        "dataset-subj_token": {
+            "values": [
+                "@"
+            ]
+        },
+        "dataset-obj_token": {
+            "values": [
+                "#"
             ]
         },
         "model.scheduler-scheduler": {
@@ -137,7 +152,7 @@
                 0.5
             ]
         },
-        "sweep_sweep": {
+        "sweep-run_sweep": {
             "values": [
                 "True"
             ]

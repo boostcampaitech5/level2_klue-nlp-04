@@ -60,7 +60,7 @@ def _strBool2Boolean(bool: str) -> bool:
   
 def _convertConfig(config: wandb.config) -> dict:
     dict_config = {"model": {}, "model.scheduler": {}, "dataset": {}, 
-                   "train": {}}
+                   "train": {}, "sweep": {}}
 
     for key in wandb.config.keys():
         dict_config[key.split("-")[0]][key.split("-")[1]] = wandb.config[key]
@@ -114,7 +114,7 @@ def train(args, config=None):
     model_config =  AutoConfig.from_pretrained(MODEL_NAME)
     model_config.num_labels = 30
     
-    # model =  AutoModelForRSequenceClassification.from_pretrained(MODEL_NAME, config=model_config)
+    # model =  AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, config=model_config)
     model = RBertModel(model_config, entity_ids) # RBert 모델 사용 시에, config에서 사용하는 모델을 Roberta계열로 바꿔주세요!
     # Entity Marker 사용
     # model.resize_token_embeddings(tokenizer.vocab_size + added_token_num) # 추가한 Special token 갯수만큼 Embedding을 늘려줘야함
