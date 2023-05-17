@@ -157,8 +157,12 @@ class RBertModel(RobertaPreTrainedModel):
         outputs = (logits,) + output[2:] # logits, (hidden_states), (attentions)
 
         if labels is not None:
-            loss_fct = nn.CrossEntropyLoss()
+            loss_fct = nn.CrossEntropyLoss(reduction='none')
             loss = loss_fct(logits, labels)
+            #focal loss. reduction none first, and then reduction mean later
+            pt = torch.exp(-loss)
+            loss = (1-pt)**2*loss
+            loss = torch.mean(loss)
             outputs = (loss,) + outputs
 
         return outputs
