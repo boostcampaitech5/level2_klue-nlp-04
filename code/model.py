@@ -213,7 +213,9 @@ class RBertModel(RobertaPreTrainedModel):
             # loss_fct = nn.CrossEntropyLoss()
             # loss = loss_fct(logits, labels)
             # For Asymmetric Loss
-            loss = self.loss_fct(logits, F.one_hot(labels, self.num_labels))
+            labels = F.one_hot(labels, self.num_labels)
+            labels = labels * 0.9 + 0.1/30
+            loss = self.loss_fct(logits, labels)
             outputs = (loss,) + outputs
 
         return outputs
