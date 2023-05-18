@@ -214,7 +214,8 @@ class RBertModel(RobertaPreTrainedModel):
             # loss = loss_fct(logits, labels)
             # For Asymmetric Loss
             labels = F.one_hot(labels, self.num_labels)
-            labels = labels * 0.9 + 0.1/30
+            # labels = labels * 0.9 + 0.1/30 ##label smoothing factor 0.1
+            # 성능 향상이 애매해서 주석처리 하겠습니다.
             loss = self.loss_fct(logits, labels)
             outputs = (loss,) + outputs
 
