@@ -54,6 +54,8 @@ class AsymmetricLoss(nn.Module):
         los_pos = y * torch.log(xs_pos.clamp(min=self.eps))
         los_neg = (1 - y) * torch.log(xs_neg.clamp(min=self.eps))
         loss = los_pos + los_neg
+        # loss = loss*torch.tensor([2]+[1]*10+[3]+[1]*18).to(torch.device('cuda:0'), dtype=torch.float)
+        # class weight를 no relation에 1, residence에 3을 주었습니다.
 
         # Asymmetric Focusing
         if self.gamma_neg > 0 or self.gamma_pos > 0:
