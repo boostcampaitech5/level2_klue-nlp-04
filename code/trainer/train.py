@@ -83,6 +83,10 @@ def train(args, config=None):
 
     MODEL_NAME = config["model"]["model_name"] if type(args) == dict else args.model_name
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    # Entitiy Marker 사용
+    # added_special_tokens = ['[SE]', '[/SE]', '[OE]', '[/OE]']
+    # added_special_tokens = json.loads(config["dataset"]["tokenizing_type"]) if config else added_special_tokens
+    # added_token_num = tokenizer.add_special_tokens({'additional_special_tokens': added_special_tokens})
 
     # Data Load and Tokenizing
     tokenizing_type = config["dataset"]["tokenizing_type"] if config else "type_entity_marker_punct"
@@ -120,11 +124,7 @@ def train(args, config=None):
     training_args = TrainingArguments(
         fp16=True,                      # use 16-bit (mixed) precision to increase speed
         gradient_checkpointing=True,    # use gradient checkpointing to reduce memory usage
-        # TODO:
-        # adamw 대신 adafactor, 8비트아담
-        # 데이터로더 pin과 nun_worker 설정하기
-        # 배치 크기 늘리기
-        ##
+    
         output_dir='./results',          # output directory
         save_total_limit=5,              # number of total save model.
         save_steps=500,                 # model saving step. ## check-point가 여기야

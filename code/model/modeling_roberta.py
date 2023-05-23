@@ -24,12 +24,6 @@ from transformers.models.roberta.modeling_roberta import (
     RobertaPreTrainedModel,
     RobertaPooler,
     RobertaClassificationHead
-    
-    # BertModel,
-    # BertEncoder,
-    # BertEmbeddings,
-    # BertPooler,
-    # BertPreTrainedModel
 )
 
 _CHECKPOINT_FOR_DOC = "roberta-base"
