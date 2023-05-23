@@ -221,7 +221,6 @@ class BertForSequenceClassificationWithEntity(BertPreTrainedModel):
 
         self.init_weights()
 
-
     def forward(
         self,
         input_ids=None,

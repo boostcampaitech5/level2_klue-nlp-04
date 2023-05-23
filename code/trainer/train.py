@@ -9,11 +9,11 @@ import json
 from collections import namedtuple
 from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification, Trainer, TrainingArguments, AdamW
 
-from load_data import *
-from metrics import *
+from data.load_data import *
+from utils.metrics import *
 from torch.utils.data import random_split
-from CustomScheduler import CosineAnnealingWarmUpRestarts
-from model import RBertModel
+from utils.CustomScheduler import CosineAnnealingWarmUpRestarts
+from model.model import RBertModel
 
 import wandb
 
@@ -83,17 +83,9 @@ def train(args, config=None):
 
     MODEL_NAME = config["model"]["model_name"] if type(args) == dict else args.model_name
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-    # Entitiy Marker 사용
-    # added_special_tokens = ['[SE]', '[/SE]', '[OE]', '[/OE]']
-    # added_special_tokens = json.loads(config["dataset"]["tokenizing_type"]) if config else added_special_tokens
-    # added_token_num = tokenizer.add_special_tokens({'additional_special_tokens': added_special_tokens})
-
 
     # Data Load and Tokenizing
-    tokenizing_type         = config["dataset"]["tokenizing_type"] if config else "type_entity_marker_punct"
-    # 1. Entity Marker 사용
-    # tokenized_total, total_label = tokenized_dataset("../dataset/train/train.csv", tokenizer, tokenizing_type="entity_marker", added_special_tokens)
-    # 2. Base, typed Entity Marker Punct 사용
+    tokenizing_type = config["dataset"]["tokenizing_type"] if config else "type_entity_marker_punct"
     tokenized_total, total_label = tokenized_dataset("../dataset/train/train.csv", tokenizer, tokenizing_type=tokenizing_type)
 
 

@@ -1,6 +1,6 @@
 from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification, Trainer, TrainingArguments
 from torch.utils.data import DataLoader
-from load_data import *
+from data.load_data import *
 import pandas as pd
 import torch
 import torch.nn.functional as F

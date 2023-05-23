@@ -7,10 +7,10 @@ import time
 from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification, Trainer, TrainingArguments, AdamW
 # import wandb
 
-from load_data import *
-from metrics import *
-from modeling_bert import *
-from CustomScheduler import CosineAnnealingWarmUpRestarts
+from data.load_data import *
+from utils.metrics import *
+from model.modeling_bert import *
+from utils.CustomScheduler import CosineAnnealingWarmUpRestarts
 
 def train():
     # MODEL_NAME = "bert-base-uncased"

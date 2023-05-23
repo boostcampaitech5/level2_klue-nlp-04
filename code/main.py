@@ -1,7 +1,7 @@
 import argparse
 
-from train import *
-from inference import *
+from trainer.train import *
+from utils.inference.inference import *
 import configparser
 import json
 import wandb
